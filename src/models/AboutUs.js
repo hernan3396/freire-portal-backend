@@ -19,9 +19,13 @@ const aboutUsSchema = new mongoose.Schema(
       type: String,
       default: "#000000",
     },
+    order: {
+      type: Number,
+      default: 0,
+    },
   },
   {
-    timestamps: true, // agrega createdAt y updatedAt
+    timestamps: true,
   }
 );
 

@@ -1,27 +1,51 @@
 const AboutUs = require("../models/AboutUs.js");
+const logger = require("../utils/logger.js");
 
-// Obtener todos los registros
-const getAboutUs = async (req, res) => {
+// GET - Obtener todas las secciones ordenadas
+const getAllAboutUs = async (req, res, next) => {
   try {
-    const aboutUs = await AboutUs.find();
-    res.json(aboutUs);
+    const sections = await AboutUs.find().sort({ order: 1 });
+    res.json({ success: true, data: sections });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error al obtener los datos de AboutUs", error });
+    logger.error("Error al obtener secciones About Us:", error.message);
+    next(error);
   }
 };
 
-// Crear un nuevo registro
-const createAboutUs = async (req, res) => {
+// POST - Reemplazar todas las secciones
+const replaceAllAboutUs = async (req, res, next) => {
   try {
-    const newAboutUs = new AboutUs(req.body);
-    const savedAboutUs = await newAboutUs.save();
-    res.status(201).json(savedAboutUs);
+    const { sections } = req.body;
+
+    if (!sections || !Array.isArray(sections)) {
+      return res.status(400).json({
+        success: false,
+        error: "Se requiere un array de secciones",
+      });
+    }
+
+    // Eliminar todas las secciones existentes
+    await AboutUs.deleteMany({});
+    logger.info("Secciones anteriores de About Us eliminadas");
+
+    // Crear las nuevas secciones con su orden
+    const savedSections = await AboutUs.insertMany(
+      sections.map((section, index) => ({
+        ...section,
+        order: index,
+      }))
+    );
+
+    logger.info(`${savedSections.length} secciones de About Us guardadas`);
+
+    res.status(201).json({
+      success: true,
+      data: savedSections,
+      message: `${savedSections.length} secciones guardadas correctamente`,
+    });
   } catch (error) {
-    res
-      .status(400)
-      .json({ message: "Error al crear el registro de AboutUs", error });
+    logger.error("Error al guardar secciones About Us:", error.message);
+    next(error);
   }
 };
 
@@ -68,8 +92,8 @@ const deleteAboutUs = async (req, res) => {
 };
 
 module.exports = {
-  getAboutUs,
-  createAboutUs,
+  getAllAboutUs,
+  replaceAllAboutUs,
   getAboutUsById,
   updateAboutUs,
   deleteAboutUs,

@@ -4,7 +4,7 @@ const logger = require("../utils/logger");
 // GET - Obtener todas las imágenes del carousel
 const getAllCarouselImages = async (req, res, next) => {
   try {
-    const images = await CarouselImage.find().sort({ createdAt: -1 });
+    const images = await CarouselImage.find().sort({ order: 1 }); // Ordenar por campo order
     res.json({ success: true, data: images });
   } catch (error) {
     logger.error("Error al obtener imágenes del carousel:", error.message);
@@ -30,10 +30,20 @@ const getCarouselImageById = async (req, res, next) => {
   }
 };
 
-// POST - Crear una nueva imagen del carousel
+// POST - Crear una nueva imagen del carousel (verificar duplicados)
 const createCarouselImage = async (req, res, next) => {
   try {
     const { alt, link, title, description, cta } = req.body;
+
+    // Verificar si ya existe una imagen con el mismo link
+    const existingImage = await CarouselImage.findOne({ link });
+
+    if (existingImage) {
+      return res.status(400).json({
+        success: false,
+        error: "Ya existe una imagen con esta URL en el carousel",
+      });
+    }
 
     const newImage = new CarouselImage({
       alt,
@@ -49,6 +59,44 @@ const createCarouselImage = async (req, res, next) => {
     res.status(201).json({ success: true, data: savedImage });
   } catch (error) {
     logger.error("Error al crear imagen del carousel:", error.message);
+    next(error);
+  }
+};
+
+// POST - Guardar múltiples imágenes (reemplaza todas las existentes)
+const replaceAllCarouselImages = async (req, res, next) => {
+  try {
+    const { images } = req.body;
+
+    if (!images || !Array.isArray(images)) {
+      return res.status(400).json({
+        success: false,
+        error: "Se requiere un array de imágenes",
+      });
+    }
+
+    // Eliminar todas las imágenes existentes
+    await CarouselImage.deleteMany({});
+    logger.info("Imágenes anteriores del carousel eliminadas");
+
+    // Crear las nuevas imágenes con su orden
+    const savedImages = await CarouselImage.insertMany(
+      images.map((img, index) => ({
+        ...img,
+        cta: img.cta || "Ver más",
+        order: index, // Asignar el orden según el índice
+      }))
+    );
+
+    logger.info(`${savedImages.length} imágenes del carousel guardadas`);
+
+    res.status(201).json({
+      success: true,
+      data: savedImages,
+      message: `${savedImages.length} imágenes guardadas correctamente`,
+    });
+  } catch (error) {
+    logger.error("Error al guardar imágenes del carousel:", error.message);
     next(error);
   }
 };
@@ -110,6 +158,7 @@ module.exports = {
   getAllCarouselImages,
   getCarouselImageById,
   createCarouselImage,
+  replaceAllCarouselImages,
   updateCarouselImage,
   deleteCarouselImage,
 };
