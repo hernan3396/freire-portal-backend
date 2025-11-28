@@ -1,23 +1,26 @@
 const mongoose = require("mongoose");
 
-const linkSchema = new mongoose.Schema({
-  text: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  link: {
-    type: String,
-    required: true,
-  },
-});
-
 const navbarSchema = new mongoose.Schema(
   {
-    links: {
-      type: [linkSchema],
-      required: true,
-      validate: [(arr) => arr.length > 0, "Debe tener al menos un enlace"],
+    text: {
+      type: String,
+      required: [true, "El texto es requerido"],
+      trim: true,
+    },
+    link: {
+      type: String,
+      required: [true, "El link es requerido"],
+      trim: true,
+      validate: {
+        validator: function (v) {
+          return /^(https?:\/\/|\/|#)/.test(v);
+        },
+        message: "El link debe ser una URL válida o ruta interna",
+      },
+    },
+    order: {
+      type: Number,
+      default: 0,
     },
   },
   {
@@ -25,4 +28,4 @@ const navbarSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("Navbar", linkSchema);
+module.exports = mongoose.model("Navbar", navbarSchema);

@@ -1,11 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const navbarController = require("../controllers/navbarController.js");
+const navbarController = require("../controllers/navbarController");
 
-router.get("/", navbarController.getNavbars);
-router.post("/", navbarController.createNavbar);
-router.get("/:id", navbarController.getNavbarById);
-router.put("/:id", navbarController.updateNavbar);
-router.delete("/:id", navbarController.deleteNavbar);
+router.get("/", navbarController.getAllNavbarLinks);
+router.post("/replace-all", navbarController.replaceAllNavbarLinks);
+router.delete("/:id", navbarController.deleteNavbarLink);
 
 module.exports = router;
