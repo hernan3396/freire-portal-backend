@@ -12,7 +12,6 @@ const reposicion = new mongoose.Schema({
     required: [true, "La categoría es requerida"],
     trim: true,
     enum: ["Bovino", "Equino", "Ovino", "Porcino", "Caprino", "Otro"],
-    message: "{VALUE} no es una categoría válida",
   },
   raza: {
     type: String,
@@ -69,6 +68,10 @@ const reposicion = new mongoose.Schema({
     type: String,
     required: [true, "El número de contacto es requerido"],
     trim: true,
+  },
+  order: {
+    type: Number,
+    default: 0,
   },
   createdAt: {
     type: Date,

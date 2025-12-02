@@ -8,5 +8,6 @@ router.get("/name/:name", locationController.getLocationByName);
 router.post("/", locationController.createLocation);
 router.put("/:id", locationController.updateLocation);
 router.delete("/:id", locationController.deleteLocation);
+router.post("/replace-all", locationController.replaceAllLocations);
 
 module.exports = router;

@@ -10,5 +10,6 @@ router.delete("/:id", reposicionController.deleteAnimal);
 
 router.get("/categoria/:cat", reposicionController.getAnimalsByCategory);
 router.get("/status/:status", reposicionController.getAnimalsByStatus);
+router.post("/replace-all", reposicionController.replaceAllAnimals);
 
 module.exports = router;
